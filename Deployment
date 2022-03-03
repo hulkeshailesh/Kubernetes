@@ -1,0 +1,103 @@
+# Deployment (deploy)
+Documentation Link: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
+A Deployment provides declarative updates for Pods and ReplicaSets.
+
+The following are typical use cases for Deployments:
+- Create a Deployment to rollout a ReplicaSet. The ReplicaSet creates Pods in the background. Check the status of the rollout to see if it succeeds or not.
+- Declare the new state of the Pods by updating the PodTemplateSpec of the Deployment. A new ReplicaSet is created and the Deployment manages moving the Pods from the old      ReplicaSet to the new one at a controlled rate. Each new ReplicaSet updates the revision of the Deployment.
+- Rollback to an earlier Deployment revision if the current state of the Deployment is not stable. Each rollback updates the revision of the Deployment.
+- Scale up the Deployment to facilitate more load.
+- Pause the rollout of a Deployment to apply multiple fixes to its PodTemplateSpec and then resume it to start a new rollout.
+- Use the status of the Deployment as an indicator that a rollout has stuck.
+- Clean up older ReplicaSets that you don't need anymore.
+
+Commands:
+kubectl apply -f deployment.yaml
+kubectl get rs
+kubectl get deploy
+
+Usage:
+  kubectl rollout history (TYPE NAME | TYPE/NAME) [flags] [options]
+  Examples:
+  # View the rollout history of a deployment
+  kubectl rollout history deployment/abc
+
+  # View the details of daemonset revision 3
+  kubectl rollout history daemonset/abc --revision=3
+
+Command:  
+kubectl rollout history deployment.v1.apps/kplabs-deployment
+kubectl rollout history deployment.v1.apps/kplabs-deployment --revision 1 (or)
+kubectl rollout history deployment/kplabs-deployment --revision 1 (or)
+kubectl rollout history deploy/kplabs-deployment --revision 1
+
+Rollback:
+kubectl rollout undo deployment.v1.apps/kplabs-deployment --to-revision=1
+
+1. To update deployment:
+To set a new image to deployment as a part of rolling update
+Syntax: kubectl set image [objects] [name_of_object] [container_name]=[latest_version]
+kubectl set image deployment kplabs-deployment  php-redis=nginx:latest
+
+2. Importance of [--record] instruction
+To see which command used in history of deployment use [--record]
+kubectl rollout history deployment kplabs-deployment
+kubectl set image deployment kplabs-deployment php-redis=nginx:1.17 --record
+
+3. To rollback the deployment
+Rollback:
+kubectl rollout undo deployment kplabs-deployment
+kubectl rollout undo deployment.v1.apps/kplabs-deployment --to-revision=1
+
+4. To Scale the deployment
+kubectl scale deployment kplabs-deployment --replicas 4
+
+Step 1. Creating Deployment via CLI
+kubectl create deployment DEPLOYMENT-NAME --image=[IMAGE-NAME]
+Step 2. Generating Deployment Manifest via CLI
+kubectl create deployment DEPLOYMENT-NAME --image=[IMAGE-NAME] --dry-run=client -o yaml
+kubectl create deployment --help
+
+Example:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kplabs-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        tier: frontend
+    spec:
+      containers:
+      - name: php-redis
+        image: nginx
+        
+----------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # Unique key of the Deployment instance
+  name: deployment-example
+spec:
+  # 3 Pods should exist at all times.
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        # Apply this label to pods and default
+        # the Deployment label selector to this value
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        # Run this image
+        image: nginx:1.14
