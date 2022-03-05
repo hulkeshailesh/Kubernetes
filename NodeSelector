@@ -1,0 +1,21 @@
+NodeSelector
+-----------
+1. Label to Node:
+Syntax:
+kubectl label node [node_name] label_key=label_value
+Command:
+kubectl label node docker-for-desktop disk=ssd
+
+2. Create a nodeSelector configuration to run pods only on nodes which has a label of disk=ssd
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: service-pod
+spec:
+  containers:
+  - name: service-pod
+    image: nginx
+  nodeSelector:
+    disk: ssd    
+    
