@@ -1,0 +1,63 @@
+#NodeAffinity
+
+For multiple reasons, there can be a need to run a pod on a specific worker node.
+There can be multiple reasons, node hardware being the common one.
+Node affinity is a set of rules used by the scheduler to determine where a pod can be placed.
+In Kubernetes terms, it is referred as nodeSelector, and nodeAffinity/podAffinity fields under PodSpec
+In Kubernetes, we can achieve nodeAffinity with the help of:
+● nodeSelector
+● nodeAffinity (more flexibility)
+
+Node affinity is conceptually similar to nodeSelector – it allows you to constrain which nodes your pod is eligible to be scheduled on, based on labels on the node.
+Labels and Selectors are standard method to group things together.
+
+Node Affinity Types:
+requiredDuringSchedulingIgnoredDuringExecution
+preferredDuringSchedulingIgnoredDuringExecution
+
+DuringScheduling : The state where a pod doesn't exist and created for the first time.
+DuringExecution: The state where a pod has running and the change is made in the environment that affect the node affinity such as a change in label of the node.
+
+1. nodeAffinity-required.yaml
+--------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kplabs-node-affinity
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: disk
+            operator: In
+            values:
+            - ssd
+  containers:
+  - name: with-node-affinity
+    image: nginx
+    
+    
+    
+2. nodeAffinity-preferred.yaml
+----------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kplabs-node-affinity-preferred
+spec:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: memory
+            operator: In
+            values:
+            - high
+            - medium
+  containers:
+  - name: kplabs-affinity-prefferd
+    image: nginx
